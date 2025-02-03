@@ -6,31 +6,34 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 
 import { labels, priorities, statuses } from "./data";
-import { Task } from "../interfaces/taskSchema";
+import { Task } from "../../schemas/taskSchema";
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
+import { CodeXml } from "lucide-react";
 
 export const columns: ColumnDef<Task>[] = [
   {
     id: "select",
     header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-        className="translate-y-[2px]"
-      />
+      // <Checkbox
+      //   checked={
+      //     table.getIsAllPageRowsSelected() ||
+      //     (table.getIsSomePageRowsSelected() && "indeterminate")
+      //   }
+      //   onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+      //   aria-label="Select all"
+      //   className="translate-y-[2px]"
+      // />
+      <CodeXml className="text-green-500" />
     ),
     cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-        className="translate-y-[2px]"
-      />
+      // <Checkbox
+      //   checked={row.getIsSelected()}
+      //   onCheckedChange={(value) => row.toggleSelected(!!value)}
+      //   aria-label="Select row"
+      //   className="translate-y-[2px]"
+      // />
+      <CodeXml />
     ),
     enableSorting: false,
     enableHiding: false,

@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { labels } from "./data";
-import { taskSchema } from "../interfaces/taskSchema";
+import { taskSchema } from "../../schemas/taskSchema";
 
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
