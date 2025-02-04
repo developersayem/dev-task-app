@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import dbConnect from "../../v1/utils/mongodb";
 import taskModel from "../../../models/TaskModel";
+import ITask from "@/interfaces/ITask";
 
 // Handle POST request for create a new task
 export async function POST(req: NextRequest) {
@@ -10,7 +11,7 @@ export async function POST(req: NextRequest) {
 
     const { title, description, status, priority, user } = await req.json();
 
-    const newTask = await taskModel.create({
+    const newTask: ITask = await taskModel.create({
       user,
       title,
       description,

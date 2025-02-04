@@ -27,16 +27,49 @@ import {
 
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
+import { useAuth } from "@/contexts/AuthProvider";
+import { Loader } from "lucide-react";
+import AddTaskCom from "./AddTaskCom/AddTaskCom";
+import Link from "next/link";
+import ITask from "@/interfaces/ITask";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
-  data: TData[];
 }
 
-export function DataTable<TData, TValue>({
-  columns,
-  data,
-}: DataTableProps<TData, TValue>) {
+export function TaskTableCom({ columns }: DataTableProps<ITask, unknown>) {
+  //Data fetching .............................................................................................Start
+  const auth = useAuth();
+  const user = auth?.user ?? null;
+  const [tasks, setTasks] = React.useState<ITask[]>([]);
+  const [loading, setLoading] = React.useState<boolean>(true); // Added loading state
+
+  React.useEffect(() => {
+    if (!user?._id) return;
+
+    async function fetchTasks() {
+      setLoading(true); // Set loading to true before fetching
+      try {
+        console.log(user?._id);
+        const response = await fetch(`/api/v1/tasks/${user?._id}`);
+        if (response.ok) {
+          const tasksData = await response.json();
+          console.log(tasksData);
+          setTasks(tasksData);
+        } else {
+          console.error("Failed to fetch tasks:", response.statusText);
+        }
+      } catch (error) {
+        console.error("Error fetching tasks:", error);
+      } finally {
+        setLoading(false); // Set loading to false after fetching
+      }
+    }
+
+    fetchTasks();
+  }, [user?._id]);
+  //Data fetching .............................................................................................End
+
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -46,7 +79,7 @@ export function DataTable<TData, TValue>({
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
   const table = useReactTable({
-    data,
+    data: tasks,
     columns,
     state: {
       sorting,
@@ -73,59 +106,82 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="space-y-4">
-      <DataTableToolbar table={table} />
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id} colSpan={header.colSpan}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      <DataTablePagination table={table} />
-    </div>
+    <>
+      {user ? (
+        loading ? (
+          <div className="flex justify-center items-center h-40">
+            <Loader className="animate-spin w-6 h-6 text-muted-foreground" />
+            <span className="ml-2">Loading tasks...</span>
+          </div>
+        ) : (
+          <>
+            <div className="space-y-4">
+              <div className="w-full h-full flex justify-between items-center">
+                <DataTableToolbar table={table} />
+                <AddTaskCom setTasks={setTasks} />
+              </div>
+              <div className="rounded-md border">
+                <Table className="capitalize ">
+                  <TableHeader>
+                    {table.getHeaderGroups().map((headerGroup) => (
+                      <TableRow key={headerGroup.id}>
+                        {headerGroup.headers.map((header) => {
+                          return (
+                            <TableHead key={header.id} colSpan={header.colSpan}>
+                              {header.isPlaceholder
+                                ? null
+                                : flexRender(
+                                    header.column.columnDef.header,
+                                    header.getContext()
+                                  )}
+                            </TableHead>
+                          );
+                        })}
+                      </TableRow>
+                    ))}
+                  </TableHeader>
+                  <TableBody>
+                    {table.getRowModel().rows?.length ? (
+                      table.getRowModel().rows.map((row) => (
+                        <TableRow
+                          key={row.id}
+                          data-state={row.getIsSelected() && "selected"}
+                        >
+                          {row.getVisibleCells().map((cell) => (
+                            <TableCell key={cell.id}>
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext()
+                              )}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell
+                          colSpan={columns.length}
+                          className="h-24 text-center"
+                        >
+                          No results.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+              <DataTablePagination table={table} />
+            </div>
+          </>
+        )
+      ) : (
+        <div className="w-full h-[80vh] flex justify-center items-center">
+          Please log in to see your tasks.
+          <Link href="/auth/login" className="underline text-blue-500 px-1">
+            Log in
+          </Link>
+        </div>
+      )}
+    </>
   );
 }

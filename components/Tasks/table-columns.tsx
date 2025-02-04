@@ -13,18 +13,18 @@ import { CodeXml } from "lucide-react";
 
 export const columns: ColumnDef<Task>[] = [
   {
-    id: "select",
-    header: () => <CodeXml className="text-green-500" />,
+    id: "CodeXml",
+    header: () => <CodeXml />,
     cell: () => <CodeXml />,
     enableSorting: false,
     enableHiding: false,
   },
   {
-    accessorKey: "id",
+    accessorKey: "_id",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Task" />
     ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("id")}</div>,
+    cell: ({ row }) => <div className="w-[80px]">{row.getValue("_id")}</div>,
     enableSorting: false,
     enableHiding: false,
   },
@@ -69,8 +69,8 @@ export const columns: ColumnDef<Task>[] = [
         </div>
       );
     },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
+    filterFn: (row, _id, value) => {
+      return value.includes(row.getValue(_id));
     },
   },
   {
@@ -96,8 +96,8 @@ export const columns: ColumnDef<Task>[] = [
         </div>
       );
     },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
+    filterFn: (row, _id, value) => {
+      return value.includes(row.getValue(_id));
     },
   },
   {
