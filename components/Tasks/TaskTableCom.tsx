@@ -55,11 +55,9 @@ export function DataTable<TData, TValue>({
       columnFilters,
     },
     enableRowSelection: true,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     initialState: {
       pagination: {
-        pageSize: 20, // Show 20 tasks by default
+        pageSize: 10, // Show 20 tasks by default
       },
     },
     onRowSelectionChange: setRowSelection,

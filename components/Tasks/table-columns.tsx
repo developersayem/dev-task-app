@@ -3,7 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
+// import { Checkbox } from "@/components/ui/checkbox";
 
 import { labels, priorities, statuses } from "./data";
 import { Task } from "../../schemas/taskSchema";
@@ -14,27 +14,8 @@ import { CodeXml } from "lucide-react";
 export const columns: ColumnDef<Task>[] = [
   {
     id: "select",
-    header: ({ table }) => (
-      // <Checkbox
-      //   checked={
-      //     table.getIsAllPageRowsSelected() ||
-      //     (table.getIsSomePageRowsSelected() && "indeterminate")
-      //   }
-      //   onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-      //   aria-label="Select all"
-      //   className="translate-y-[2px]"
-      // />
-      <CodeXml className="text-green-500" />
-    ),
-    cell: ({ row }) => (
-      // <Checkbox
-      //   checked={row.getIsSelected()}
-      //   onCheckedChange={(value) => row.toggleSelected(!!value)}
-      //   aria-label="Select row"
-      //   className="translate-y-[2px]"
-      // />
-      <CodeXml />
-    ),
+    header: () => <CodeXml className="text-green-500" />,
+    cell: () => <CodeXml />,
     enableSorting: false,
     enableHiding: false,
   },
@@ -124,3 +105,30 @@ export const columns: ColumnDef<Task>[] = [
     cell: ({ row }) => <DataTableRowActions row={row} />,
   },
 ];
+
+// {
+//   id: "select",
+//   header: ({ table }) => (
+//     // <Checkbox
+//     //   checked={
+//     //     table.getIsAllPageRowsSelected() ||
+//     //     (table.getIsSomePageRowsSelected() && "indeterminate")
+//     //   }
+//     //   onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+//     //   aria-label="Select all"
+//     //   className="translate-y-[2px]"
+//     // />
+//     <CodeXml className="text-green-500" />
+//   ),
+//   cell: ({ row }) => (
+//     // <Checkbox
+//     //   checked={row.getIsSelected()}
+//     //   onCheckedChange={(value) => row.toggleSelected(!!value)}
+//     //   aria-label="Select row"
+//     //   className="translate-y-[2px]"
+//     // />
+//     <CodeXml />
+//   ),
+//   enableSorting: false,
+//   enableHiding: false,
+// }

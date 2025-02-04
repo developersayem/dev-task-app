@@ -18,15 +18,15 @@
 // import StatusSelectorCom from "./StatusSelectorCom";
 // import { useState } from "react";
 // // import { toast } from "sonner";
-// // import { useAuth } from "@/app/contexts/AuthProvider";
-// import ITask from "@/app/interfaces/ITask";
+// import { useAuth } from "@/contexts/AuthProvider";
+// import ITask from "@/interfaces/ITask";
 
 // const AddTaskCom = ({
 //   setTasks,
 // }: {
 //   setTasks: React.Dispatch<React.SetStateAction<ITask[]>>;
 // }) => {
-//   // const { user } = useAuth();
+//   const { user } = useAuth();
 //   const [title, setTitle] = useState("");
 //   const [description, setDescription] = useState("");
 //   const [status, setStatus] = useState("todo");
