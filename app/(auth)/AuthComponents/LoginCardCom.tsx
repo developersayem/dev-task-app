@@ -47,7 +47,7 @@ export default function LoginCardCom() {
         login(user);
 
         // Redirect to /task page
-        router.push("/task");
+        router.push("/tasks");
       } else {
         const errorData = await response.json();
         console.log(errorData);

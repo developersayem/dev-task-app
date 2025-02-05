@@ -179,7 +179,7 @@ export function TaskTableCom<TValue>({
       ) : (
         <div className="w-full h-[80vh] flex justify-center items-center">
           Please log in to see your tasks.
-          <Link href="/auth/login" className="underline text-blue-500 px-1">
+          <Link href="/login" className="underline text-blue-500 px-1">
             Log in
           </Link>
         </div>
