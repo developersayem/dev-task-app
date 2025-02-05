@@ -5,16 +5,14 @@ import taskModel from "../../../../models/TaskModel";
 // Handle GET request to fetch tasks by user ID
 export async function GET(
   req: NextRequest,
-  context: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     await dbConnect(); // Ensure database connection
 
-    const { params } = context; // Wait for params before accessing
-    const { userId } = params; // Access the id from params
+    const userId = (await params).userId;
 
-    const tasks = await taskModel.find({ user: userId }); // Filter tasks by userId
-
+    const tasks = await taskModel.find({ user: userId }); // Fetch tasks by userId
     return NextResponse.json(tasks, { status: 200 });
   } catch (error) {
     return NextResponse.json(
