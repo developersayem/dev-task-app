@@ -33,11 +33,13 @@ import AddTaskCom from "./AddTaskCom/AddTaskCom";
 import Link from "next/link";
 import ITask from "@/interfaces/ITask";
 
-interface DataTableProps<TData, TValue> {
+interface DataTableProps<TData, TValue = unknown> {
   columns: ColumnDef<TData, TValue>[];
 }
 
-export function TaskTableCom({ columns }: DataTableProps<ITask, unknown>) {
+export function TaskTableCom<TValue>({
+  columns,
+}: DataTableProps<ITask, TValue>) {
   //Data fetching .............................................................................................Start
   const auth = useAuth();
   const user = auth?.user ?? null;

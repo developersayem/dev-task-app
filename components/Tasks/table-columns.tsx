@@ -1,17 +1,14 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-
 import { Badge } from "@/components/ui/badge";
-// import { Checkbox } from "@/components/ui/checkbox";
-
 import { labels, priorities, statuses } from "./data";
-import { Task } from "../../schemas/taskSchema";
+import ITask from "@/interfaces/ITask"; // Import the ITask interface
 import { DataTableColumnHeader } from "./data-table-column-header";
-import { DataTableRowActions } from "./data-table-row-actions";
 import { CodeXml } from "lucide-react";
+import { DataTableRowActions } from "./data-table-row-actions";
 
-export const columns: ColumnDef<Task>[] = [
+export const columns: ColumnDef<ITask>[] = [
   {
     id: "CodeXml",
     header: () => <CodeXml />,
@@ -35,7 +32,6 @@ export const columns: ColumnDef<Task>[] = [
     ),
     cell: ({ row }) => {
       const label = labels.find((label) => label.value === row.original.label);
-
       return (
         <div className="flex space-x-2">
           {label && <Badge variant="outline">{label.label}</Badge>}
@@ -102,33 +98,8 @@ export const columns: ColumnDef<Task>[] = [
   },
   {
     id: "actions",
-    cell: ({ row }) => <DataTableRowActions row={row} />,
+    cell: ({ row }) => {
+      return <DataTableRowActions row={row} />;
+    },
   },
 ];
-
-// {
-//   id: "select",
-//   header: ({ table }) => (
-//     // <Checkbox
-//     //   checked={
-//     //     table.getIsAllPageRowsSelected() ||
-//     //     (table.getIsSomePageRowsSelected() && "indeterminate")
-//     //   }
-//     //   onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-//     //   aria-label="Select all"
-//     //   className="translate-y-[2px]"
-//     // />
-//     <CodeXml className="text-green-500" />
-//   ),
-//   cell: ({ row }) => (
-//     // <Checkbox
-//     //   checked={row.getIsSelected()}
-//     //   onCheckedChange={(value) => row.toggleSelected(!!value)}
-//     //   aria-label="Select row"
-//     //   className="translate-y-[2px]"
-//     // />
-//     <CodeXml />
-//   ),
-//   enableSorting: false,
-//   enableHiding: false,
-// }
