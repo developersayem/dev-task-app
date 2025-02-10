@@ -77,10 +77,7 @@ const AddTaskCom = ({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button
-          className=" bg-green-600 text-white"
-          onClick={() => setIsOpen(true)}
-        >
+        <Button className=" " onClick={() => setIsOpen(true)}>
           <DiamondPlus /> Add Task
         </Button>
       </DialogTrigger>
