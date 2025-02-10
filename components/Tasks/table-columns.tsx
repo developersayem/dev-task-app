@@ -7,6 +7,7 @@ import ITask from "@/interfaces/ITask"; // Import the ITask interface
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { CodeXml } from "lucide-react";
 import { DataTableRowActions } from "./data-table-row-actions";
+import { handleTaskDelete, updateTaskProperty } from "./TaskTableCom";
 
 export const columns: ColumnDef<ITask>[] = [
   {
@@ -101,7 +102,15 @@ export const columns: ColumnDef<ITask>[] = [
     header: () => "actions",
     cell: ({ row }) => {
       const taskId = row.original._id as string;
-      return <DataTableRowActions taskId={taskId} row={row} />;
+
+      return (
+        <DataTableRowActions
+          taskId={taskId}
+          handleTaskDelete={() => handleTaskDelete(taskId)}
+          updateTaskProperty={updateTaskProperty}
+          row={row}
+        />
+      );
     },
   },
 ];

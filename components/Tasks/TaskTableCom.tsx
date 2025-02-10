@@ -32,6 +32,61 @@ import { Loader } from "lucide-react";
 import AddTaskCom from "./AddTaskCom/AddTaskCom";
 import Link from "next/link";
 import ITask from "@/interfaces/ITask";
+import { toast } from "sonner";
+
+// handel delete task function
+export const handleTaskDelete = async (taskId: string) => {
+  const confirmDelete = window.confirm(
+    "Are you sure you want to delete this task?"
+  );
+  if (!confirmDelete) return;
+
+  try {
+    const res = await fetch(`/api/v1/tasks/by-id/${taskId}`, {
+      method: "DELETE",
+    });
+
+    if (res.ok) {
+      toast.success("Task deleted successfully!");
+    } else {
+      toast.error("Failed to delete task.");
+    }
+  } catch (error) {
+    console.error("Error deleting task:", error);
+    toast.error("Something went wrong!");
+  }
+};
+
+// Handle updating Property like task status label etc
+
+export async function updateTaskProperty(
+  taskId: string,
+  property: string,
+  value: string
+) {
+  try {
+    const response = await fetch(`/api/v1/tasks/by-id/${taskId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ property, value }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    toast.success("Task updated successfully");
+
+    console.log("Task updated successfully:", result);
+    return result;
+  } catch (error) {
+    toast.error("Error updating task");
+    console.error("Error updating task:", error);
+  }
+}
 
 interface DataTableProps<TData, TValue = unknown> {
   columns: ColumnDef<TData, TValue>[];
@@ -50,7 +105,7 @@ export function TaskTableCom<TValue>({
     if (!user?._id) return;
 
     async function fetchTasks() {
-      setLoading(true); // Set loading to true before fetching
+      setLoading(true);
       try {
         const response = await fetch(`/api/v1/tasks/by-user/${user?._id}`);
         if (response.ok) {
@@ -62,12 +117,13 @@ export function TaskTableCom<TValue>({
       } catch (error) {
         console.error("Error fetching tasks:", error);
       } finally {
-        setLoading(false); // Set loading to false after fetching
+        setLoading(false);
       }
     }
 
     fetchTasks();
   }, [user?._id]);
+
   //Data fetching .............................................................................................End
 
   const [rowSelection, setRowSelection] = React.useState({});
