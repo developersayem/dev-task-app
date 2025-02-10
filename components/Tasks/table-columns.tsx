@@ -16,15 +16,15 @@ export const columns: ColumnDef<ITask>[] = [
     enableSorting: false,
     enableHiding: false,
   },
-  {
-    accessorKey: "_id",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Task" />
-    ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("_id")}</div>,
-    enableSorting: false,
-    enableHiding: false,
-  },
+  // {
+  //   accessorKey: "_id",
+  //   header: ({ column }) => (
+  //     <DataTableColumnHeader column={column} title="Task" />
+  //   ),
+  //   cell: ({ row }) => <div className="w-[80px]">{row.getValue("_id")}</div>,
+  //   enableSorting: false,
+  //   enableHiding: false,
+  // },
   {
     accessorKey: "title",
     header: ({ column }) => (
@@ -34,10 +34,10 @@ export const columns: ColumnDef<ITask>[] = [
       const label = labels.find((label) => label.value === row.original.label);
       return (
         <div className="flex space-x-2">
-          {label && <Badge variant="outline">{label.label}</Badge>}
           <span className="max-w-[500px] truncate font-medium">
             {row.getValue("title")}
           </span>
+          {label && <Badge variant="outline">{label.label}</Badge>}
         </div>
       );
     },
@@ -98,8 +98,10 @@ export const columns: ColumnDef<ITask>[] = [
   },
   {
     id: "actions",
+    header: () => "actions",
     cell: ({ row }) => {
-      return <DataTableRowActions row={row} />;
+      const taskId = row.original._id as string;
+      return <DataTableRowActions taskId={taskId} row={row} />;
     },
   },
 ];

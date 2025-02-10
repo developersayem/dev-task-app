@@ -1,15 +1,5 @@
-import mongoose, { Schema, Document, Model } from "mongoose";
-
-// Define Task Interface
-interface ITask extends Document {
-  user: mongoose.Schema.Types.ObjectId;
-  title: string;
-  description: string;
-  status: "todo" | "in progress" | "done" | "backlog";
-  priority: "low" | "medium" | "high";
-  createdAt: Date;
-  updatedAt: Date;
-}
+import ITask from "@/interfaces/ITask";
+import mongoose, { Schema, Model } from "mongoose";
 
 // Define Task Schema
 const taskSchema: Schema<ITask> = new Schema(
@@ -30,6 +20,11 @@ const taskSchema: Schema<ITask> = new Schema(
       type: String,
       required: true,
       trim: true,
+    },
+    label: {
+      type: String,
+      enum: ["bug", "feature", "documentation"],
+      required: true,
     },
     status: {
       type: String,

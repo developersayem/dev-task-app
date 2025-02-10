@@ -52,11 +52,9 @@ export function TaskTableCom<TValue>({
     async function fetchTasks() {
       setLoading(true); // Set loading to true before fetching
       try {
-        console.log(user?._id);
-        const response = await fetch(`/api/v1/tasks/${user?._id}`);
+        const response = await fetch(`/api/v1/tasks/by-user/${user?._id}`);
         if (response.ok) {
           const tasksData = await response.json();
-          console.log(tasksData);
           setTasks(tasksData);
         } else {
           console.error("Failed to fetch tasks:", response.statusText);
@@ -92,7 +90,7 @@ export function TaskTableCom<TValue>({
     enableRowSelection: true,
     initialState: {
       pagination: {
-        pageSize: 10, // Show 20 tasks by default
+        pageSize: 20, // Show 20 tasks by default
       },
     },
     onRowSelectionChange: setRowSelection,

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import dbConnect from "../../utils/mongodb";
-import taskModel from "../../../../models/TaskModel";
+import dbConnect from "../../../utils/mongodb";
+import taskModel from "../../../../../models/TaskModel";
 
 // Handle GET request to fetch tasks by user ID
 export async function GET(

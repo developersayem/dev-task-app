@@ -21,6 +21,7 @@ import { useState } from "react";
 import { useAuth } from "@/contexts/AuthProvider";
 import ITask from "@/interfaces/ITask";
 import { toast } from "sonner";
+import LabelSelectorCom from "./LabelSelectorCom";
 
 const AddTaskCom = ({
   setTasks,
@@ -32,6 +33,7 @@ const AddTaskCom = ({
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("todo");
   const [priority, setPriority] = useState("low");
+  const [label, setLabel] = useState("low");
   const [isOpen, setIsOpen] = useState(false); // Manage dialog state
 
   const createTask = async () => {
@@ -41,6 +43,7 @@ const AddTaskCom = ({
       description,
       status,
       priority,
+      label,
     };
     console.log(taskData);
 
@@ -59,6 +62,7 @@ const AddTaskCom = ({
         setDescription("");
         setStatus("todo");
         setPriority("low");
+        setLabel("bug");
         setIsOpen(false);
       } else {
         const errorData = await response.json();
@@ -107,6 +111,10 @@ const AddTaskCom = ({
             <div className="grid gap-2">
               <Label htmlFor="priority">Priority</Label>
               <PrioritySelectorCom setPriority={setPriority} />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="priority">Label</Label>
+              <LabelSelectorCom setLabel={setLabel} />
             </div>
           </div>
           <div className="grid gap-2">
