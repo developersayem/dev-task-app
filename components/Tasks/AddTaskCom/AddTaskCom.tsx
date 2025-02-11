@@ -17,17 +17,12 @@ import { Textarea } from "@/components/ui/textarea";
 import PrioritySelectorCom from "./PrioritySelectorCom";
 import StatusSelectorCom from "./StatusSelectorCom";
 import { useState } from "react";
-// import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthProvider";
-import ITask from "@/interfaces/ITask";
 import { toast } from "sonner";
 import LabelSelectorCom from "./LabelSelectorCom";
+import { mutate } from "swr";
 
-const AddTaskCom = ({
-  setTasks,
-}: {
-  setTasks: React.Dispatch<React.SetStateAction<ITask[]>>;
-}) => {
+const AddTaskCom = () => {
   const { user } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -56,14 +51,14 @@ const AddTaskCom = ({
 
       if (response.ok) {
         const newTask = await response.json(); // ✅ Get the new task
-        setTasks((prevTasks) => [...prevTasks, newTask]); // ✅ Add to tasks list
-        toast.success("Task created successfully!");
+        toast.success("Task created successfully!", newTask.title);
         setTitle("");
         setDescription("");
         setStatus("todo");
         setPriority("low");
         setLabel("bug");
         setIsOpen(false);
+        mutate(`/api/v1/tasks/by-user/${user?._id}`); // Revalidate data
       } else {
         const errorData = await response.json();
         toast.error(errorData.message || "Something went wrong");

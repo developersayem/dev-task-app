@@ -102,11 +102,12 @@ export const columns: ColumnDef<ITask>[] = [
     header: () => "actions",
     cell: ({ row }) => {
       const taskId = row.original._id as string;
-
+      const userId = row.original.user as unknown as string;
       return (
         <DataTableRowActions
+          userId={userId}
           taskId={taskId}
-          handleTaskDelete={() => handleTaskDelete(taskId)}
+          handleTaskDelete={handleTaskDelete}
           updateTaskProperty={updateTaskProperty}
           row={row}
         />

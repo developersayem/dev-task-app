@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import useSWR, { mutate } from "swr";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -33,9 +34,10 @@ import AddTaskCom from "./AddTaskCom/AddTaskCom";
 import Link from "next/link";
 import ITask from "@/interfaces/ITask";
 import { toast } from "sonner";
+import { fetcher } from "@/utils/fetcher";
 
-// handel delete task function
-export const handleTaskDelete = async (taskId: string) => {
+// Handle deleting task function
+export const handleTaskDelete = async (taskId: string, userId: string) => {
   const confirmDelete = window.confirm(
     "Are you sure you want to delete this task?"
   );
@@ -48,6 +50,7 @@ export const handleTaskDelete = async (taskId: string) => {
 
     if (res.ok) {
       toast.success("Task deleted successfully!");
+      mutate(`/api/v1/tasks/by-user/${userId}`); // Revalidate data
     } else {
       toast.error("Failed to delete task.");
     }
@@ -58,9 +61,9 @@ export const handleTaskDelete = async (taskId: string) => {
 };
 
 // Handle updating Property like task status label etc
-
 export async function updateTaskProperty(
   taskId: string,
+  userId: string,
   property: string,
   value: string
 ) {
@@ -78,10 +81,8 @@ export async function updateTaskProperty(
     }
 
     const result = await response.json();
-    toast.success("Task updated successfully");
-
-    console.log("Task updated successfully:", result);
-    return result;
+    toast.success(result.message);
+    mutate(`/api/v1/tasks/by-user/${userId}`); // Revalidate data
   } catch (error) {
     toast.error("Error updating task");
     console.error("Error updating task:", error);
@@ -95,36 +96,14 @@ interface DataTableProps<TData, TValue = unknown> {
 export function TaskTableCom<TValue>({
   columns,
 }: DataTableProps<ITask, TValue>) {
-  //Data fetching .............................................................................................Start
   const auth = useAuth();
   const user = auth?.user ?? null;
-  const [tasks, setTasks] = React.useState<ITask[]>([]);
-  const [loading, setLoading] = React.useState<boolean>(true); // Added loading state
 
-  React.useEffect(() => {
-    if (!user?._id) return;
-
-    async function fetchTasks() {
-      setLoading(true);
-      try {
-        const response = await fetch(`/api/v1/tasks/by-user/${user?._id}`);
-        if (response.ok) {
-          const tasksData = await response.json();
-          setTasks(tasksData);
-        } else {
-          console.error("Failed to fetch tasks:", response.statusText);
-        }
-      } catch (error) {
-        console.error("Error fetching tasks:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchTasks();
-  }, [user?._id]);
-
-  //Data fetching .............................................................................................End
+  const {
+    data: tasks,
+    error,
+    isLoading,
+  } = useSWR(user?._id ? `/api/v1/tasks/by-user/${user?._id}` : null, fetcher);
 
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
@@ -135,7 +114,7 @@ export function TaskTableCom<TValue>({
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
   const table = useReactTable({
-    data: tasks,
+    data: tasks || [],
     columns,
     state: {
       sorting,
@@ -161,74 +140,80 @@ export function TaskTableCom<TValue>({
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
 
+  if (error) {
+    return (
+      <div className="w-full h-[80vh] flex justify-center items-center">
+        Error loading tasks.
+      </div>
+    );
+  }
+
   return (
     <>
       {user ? (
-        loading ? (
+        isLoading ? (
           <div className="flex justify-center items-center h-40">
             <Loader className="animate-spin w-6 h-6 text-muted-foreground" />
             <span className="ml-2">Loading tasks...</span>
           </div>
         ) : (
-          <>
-            <div className="space-y-4">
-              <div className="w-full h-full flex justify-between items-center">
-                <DataTableToolbar table={table} />
-                <AddTaskCom setTasks={setTasks} />
-              </div>
-              <div className="rounded-md border">
-                <Table className="capitalize ">
-                  <TableHeader>
-                    {table.getHeaderGroups().map((headerGroup) => (
-                      <TableRow key={headerGroup.id}>
-                        {headerGroup.headers.map((header) => {
-                          return (
-                            <TableHead key={header.id} colSpan={header.colSpan}>
-                              {header.isPlaceholder
-                                ? null
-                                : flexRender(
-                                    header.column.columnDef.header,
-                                    header.getContext()
-                                  )}
-                            </TableHead>
-                          );
-                        })}
-                      </TableRow>
-                    ))}
-                  </TableHeader>
-                  <TableBody>
-                    {table.getRowModel().rows?.length ? (
-                      table.getRowModel().rows.map((row) => (
-                        <TableRow
-                          key={row.id}
-                          data-state={row.getIsSelected() && "selected"}
-                        >
-                          {row.getVisibleCells().map((cell) => (
-                            <TableCell key={cell.id}>
-                              {flexRender(
-                                cell.column.columnDef.cell,
-                                cell.getContext()
-                              )}
-                            </TableCell>
-                          ))}
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell
-                          colSpan={columns.length}
-                          className="h-24 text-center"
-                        >
-                          No results.
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-              <DataTablePagination table={table} />
+          <div className="space-y-4">
+            <div className="w-full h-full flex justify-between items-center">
+              <DataTableToolbar table={table} />
+              <AddTaskCom />
             </div>
-          </>
+            <div className="rounded-md border">
+              <Table className="capitalize ">
+                <TableHeader>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => {
+                        return (
+                          <TableHead key={header.id} colSpan={header.colSpan}>
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext()
+                                )}
+                          </TableHead>
+                        );
+                      })}
+                    </TableRow>
+                  ))}
+                </TableHeader>
+                <TableBody>
+                  {table.getRowModel().rows?.length ? (
+                    table.getRowModel().rows.map((row) => (
+                      <TableRow
+                        key={row.id}
+                        data-state={row.getIsSelected() && "selected"}
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id}>
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={columns.length}
+                        className="h-24 text-center"
+                      >
+                        No results.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+            <DataTablePagination table={table} />
+          </div>
         )
       ) : (
         <div className="w-full h-[80vh] flex justify-center items-center">

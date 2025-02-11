@@ -22,16 +22,19 @@ import { taskSchema } from "../../schemas/taskSchema";
 interface DataTableRowActionsProps<TData> {
   row: Row<TData>;
   taskId: string;
-  handleTaskDelete: (taskId: string) => Promise<void>;
+  userId: string;
+  handleTaskDelete: (taskId: string, userId: string) => Promise<void>;
   updateTaskProperty: (
     taskId: string,
     property: string,
-    value: string
+    value: string,
+    userId: string
   ) => Promise<void>;
 }
 
 export function DataTableRowActions<TData>({
   taskId,
+  userId,
   row,
   handleTaskDelete,
   updateTaskProperty,
@@ -66,7 +69,7 @@ export function DataTableRowActions<TData>({
                   key={label.value}
                   value={label.value}
                   onClick={() =>
-                    updateTaskProperty(taskId, "label", label.value)
+                    updateTaskProperty(taskId, userId, "label", label.value)
                   }
                 >
                   {label.label}
@@ -87,7 +90,7 @@ export function DataTableRowActions<TData>({
                   key={status.value}
                   value={status.value}
                   onClick={() =>
-                    updateTaskProperty(taskId, "status", status.value)
+                    updateTaskProperty(taskId, userId, "status", status.value)
                   }
                 >
                   {status.label}
@@ -108,7 +111,12 @@ export function DataTableRowActions<TData>({
                   key={priority.value}
                   value={priority.value}
                   onClick={() =>
-                    updateTaskProperty(taskId, "priority", priority.value)
+                    updateTaskProperty(
+                      taskId,
+                      userId,
+                      "priority",
+                      priority.value
+                    )
                   }
                 >
                   {priority.label}
@@ -119,7 +127,7 @@ export function DataTableRowActions<TData>({
         </DropdownMenuSub>
 
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => handleTaskDelete(taskId)}>
+        <DropdownMenuItem onClick={() => handleTaskDelete(taskId, userId)}>
           Delete
         </DropdownMenuItem>
       </DropdownMenuContent>
