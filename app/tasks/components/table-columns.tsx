@@ -7,7 +7,7 @@ import ITask from "@/interfaces/ITask"; // Import the ITask interface
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { CodeXml } from "lucide-react";
 import { DataTableRowActions } from "./data-table-row-actions";
-import { handleTaskDelete, updateTaskProperty } from "./TaskTableCom";
+import { handleTaskDelete, updateTaskProperty } from "./task-table-com";
 
 export const columns: ColumnDef<ITask>[] = [
   {

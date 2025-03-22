@@ -8,7 +8,6 @@ export async function POST(req: NextRequest) {
     await dbConnect(); // Ensure database connection
 
     const body = await req.json();
-    console.log("Received Request Body:", body); // ✅ Debugging step
 
     const { title, description, status, priority, user, label } = body;
 
@@ -25,9 +24,6 @@ export async function POST(req: NextRequest) {
       priority,
       label,
     });
-
-    console.log("Saved Task in DB:", newTask); // ✅ Check if label is missing
-
     return NextResponse.json(newTask, { status: 201 });
   } catch (error) {
     console.error("Database Error:", error);

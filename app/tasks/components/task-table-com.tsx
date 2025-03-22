@@ -30,7 +30,7 @@ import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
 import { useAuth } from "@/contexts/AuthProvider";
 import { Loader } from "lucide-react";
-import AddTaskCom from "./AddTaskCom/AddTaskCom";
+import AddTaskCom from "./add-task-com/add-task-com";
 import Link from "next/link";
 import ITask from "@/interfaces/ITask";
 import { toast } from "sonner";

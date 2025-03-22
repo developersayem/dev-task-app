@@ -1,7 +1,7 @@
 import mongoose, { Mongoose } from "mongoose";
 
 const MONGODB_URI =
-  process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/task-app";
+  process.env.MONGODB_URI || "mongodb://localhost:27017/dev-task-app";
 
 if (!MONGODB_URI) {
   throw new Error("Please define the MONGODB_URI environment variable");

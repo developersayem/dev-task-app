@@ -1,7 +1,7 @@
-import { ThemeCom } from "@/components/ThemeCom/ThemeCom";
-import { UserNav } from "@/components/Tasks/user-nav";
-import { TaskTableCom } from "@/components/Tasks/TaskTableCom";
-import { columns } from "@/components/Tasks/table-columns";
+import { ThemeCom } from "@/components/theme-com/theme-com";
+import { UserNav } from "./components/user-nav";
+import { TaskTableCom } from "./components/task-table-com";
+import { columns } from "./components/table-columns";
 
 export default function TaskPage() {
   return (

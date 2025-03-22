@@ -11,7 +11,6 @@ export async function GET(
     await dbConnect(); // Ensure database connection
 
     const userId = (await params).userId;
-
     const tasks = await taskModel.find({ user: userId }); // Fetch tasks by userId
     return NextResponse.json(tasks, { status: 200 });
   } catch (error) {

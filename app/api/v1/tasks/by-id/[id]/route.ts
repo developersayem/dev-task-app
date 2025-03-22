@@ -40,7 +40,6 @@ export async function PATCH(
     const id = (await params).id;
 
     const { property, value } = await req.json();
-    console.log({ [property]: value });
 
     const result = await taskModel.findOneAndUpdate(
       { _id: id },

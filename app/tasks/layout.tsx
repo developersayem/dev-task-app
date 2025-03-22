@@ -22,6 +22,12 @@ const cascadia = localFont({
   display: "swap", // Helps with better rendering
 });
 
+export const metadata = {
+  title: "Tasks",
+  description:
+    "A task and issue tracker for all developers, build using Tanstack Table.",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {

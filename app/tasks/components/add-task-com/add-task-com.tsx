@@ -8,18 +8,18 @@ import {
   DialogHeader,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "../../ui/button";
+import { Button } from "@/components/ui/button";
 import { DiamondPlus } from "lucide-react";
 import { CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import PrioritySelectorCom from "./PrioritySelectorCom";
-import StatusSelectorCom from "./StatusSelectorCom";
+import PrioritySelectorCom from "./priority-selector-com";
+import StatusSelectorCom from "./status-selector-com";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
-import LabelSelectorCom from "./LabelSelectorCom";
+import LabelSelectorCom from "./label-selector-com";
 import { mutate } from "swr";
 
 const AddTaskCom = () => {
@@ -40,7 +40,6 @@ const AddTaskCom = () => {
       priority,
       label,
     };
-    console.log(taskData);
 
     try {
       const response = await fetch("/api/v1/tasks", {

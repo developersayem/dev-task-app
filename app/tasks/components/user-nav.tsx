@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthProvider";
+import Link from "next/link";
 
 export function UserNav() {
   const { user, logout } = useAuth();
@@ -23,7 +24,7 @@ export function UserNav() {
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-9 w-9">
             <AvatarImage
-              src="/avatars/03.png"
+              src={user?.image?.toString() || ""}
               alt={user?.firstName || "User"}
             />
             <AvatarFallback>
@@ -46,10 +47,24 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>Profile</DropdownMenuItem>
-          <DropdownMenuItem>Billing</DropdownMenuItem>
-          <DropdownMenuItem>Settings</DropdownMenuItem>
-          <DropdownMenuItem>New Team</DropdownMenuItem>
+          <DropdownMenuItem>
+            <Link href="/settings">Profile</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Link href="/billing">Billing</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Link href="/settings">Settings</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Link href="/help">Help</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Link href="/teams">New Team</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Link href="/tasks">Task</Link>
+          </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={logout}>

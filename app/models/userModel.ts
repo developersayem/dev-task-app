@@ -23,11 +23,21 @@ const UserSchema: Schema = new Schema(
       unique: true,
       match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
     },
+    bio:{
+      type: String,
+      minlength: 3,
+      required: false
+    },
+    image: {
+      name: { type: String, required: false },
+      file: { type: String, required: false }, // Base64 or URL
+    },
     password: {
       type: String,
       required: true,
       minlength: 6,
     },
+    
     tasks: [
       {
         type: Schema.Types.ObjectId,
@@ -55,7 +65,12 @@ const userValidator = (data: IUser) => {
         }
         return value;
       }),
+    bio: Joi.string().min(3).optional().allow(null, ""), // ✅ Optional `boi`
     password: Joi.string().min(6).required(),
+    image: Joi.object({
+      name: Joi.string().optional().allow(null, ""), // ✅ Optional `image.name`
+      file: Joi.string().optional().allow(null, ""), // ✅ Optional `image.file`
+    }).optional(), // ✅ Entire `image` object is optional
   }).messages({
     "string.email": "Make sure your email is correct",
   });
@@ -63,6 +78,7 @@ const userValidator = (data: IUser) => {
   const { error } = userJoiSchema.validate(data);
   return error;
 };
+
 
 // Check if the model is already defined
 const UserModel =

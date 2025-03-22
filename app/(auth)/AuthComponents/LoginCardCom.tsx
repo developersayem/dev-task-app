@@ -50,7 +50,6 @@ export default function LoginCardCom() {
         router.push("/tasks");
       } else {
         const errorData = await response.json();
-        console.log(errorData);
         toast.error(errorData.message || "Login failed");
       }
     } catch (error) {

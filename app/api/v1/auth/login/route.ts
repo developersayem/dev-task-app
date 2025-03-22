@@ -18,9 +18,8 @@ export async function POST(req: NextRequest) {
   try {
     body = await req.json();
   } catch (error) {
-    console.log(error);
     return NextResponse.json(
-      { message: "Invalid or missing JSON body" },
+      { message: "Invalid or missing JSON body", error },
       { status: 400 }
     );
   }
@@ -59,6 +58,8 @@ export async function POST(req: NextRequest) {
       firstName: user.firstName,
       lastName: user.lastName,
       email: user.email,
+      bio: user.bio,
+      image: user.image,
     });
   } catch (error) {
     console.error("Login error:", error);
