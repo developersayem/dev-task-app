@@ -7,30 +7,30 @@ import { CircleArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Forms",
-  description: "Advanced form example using react-hook-form and Zod.",
+  title: "Settings",
+  description: "Manage account and website settings.",
 };
 
 const sidebarNavItems = [
   {
     title: "Profile",
-    href: "/examples/forms",
+    href: "/settings",
   },
   {
     title: "Account",
-    href: "/examples/forms/account",
+    href: "/settings/account",
   },
   {
     title: "Appearance",
-    href: "/examples/forms/appearance",
+    href: "/settings/appearance",
   },
   {
     title: "Notifications",
-    href: "/examples/forms/notifications",
+    href: "/settings/notifications",
   },
   {
     title: "Display",
-    href: "/examples/forms/display",
+    href: "/settings/display",
   },
 ];
 
