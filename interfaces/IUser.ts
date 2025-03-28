@@ -7,8 +7,11 @@ export default interface IUser extends Document {
   lastName: string;
   email: string;
   bio: string;
+  dob: Date;
   image: IImage;
+  verificationCode: string;
   password: string;
   createdAt: Date;
   updatedAt: Date;
+
 }

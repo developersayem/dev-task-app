@@ -17,6 +17,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { useTheme } from "next-themes";
+import { useEffect } from "react";
 
 const appearanceFormSchema = z.object({
   theme: z.enum(["light", "dark"], {
@@ -30,21 +31,25 @@ const appearanceFormSchema = z.object({
 
 type AppearanceFormValues = z.infer<typeof appearanceFormSchema>;
 
-// Default values
-const defaultValues: Partial<AppearanceFormValues> = {
-  theme: "light",
-  font: "inter",
-};
-
 export function AppearanceForm() {
-  const { setTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
+
+  // Initialize form with correct default values
   const form = useForm<AppearanceFormValues>({
     resolver: zodResolver(appearanceFormSchema),
-    defaultValues,
+    defaultValues: {
+      theme: theme as "light" | "dark", // Set the current theme as default
+      font: "inter", // Default font
+    },
   });
 
+  // Update form values when the theme changes
+  useEffect(() => {
+    form.reset({ theme: theme as "light" | "dark", font: "inter" });
+  }, [theme, form]);
+
   function onSubmit(data: AppearanceFormValues) {
-    setTheme(data.theme); // Now correctly setting the theme
+    setTheme(data.theme);
     console.log("Submitted data:", data);
     toast(`Theme updated to: ${data.theme}`);
   }
@@ -64,8 +69,8 @@ export function AppearanceForm() {
               </FormDescription>
               <FormMessage />
               <RadioGroup
-                onValueChange={field.onChange} // Directly updates form state
-                value={field.value} // Ensures controlled component
+                onValueChange={field.onChange}
+                value={field.value} // Controlled component
                 className="grid max-w-md grid-cols-2 gap-8 pt-2"
               >
                 {/* Light Theme */}

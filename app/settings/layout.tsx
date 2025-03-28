@@ -1,10 +1,8 @@
 import { Metadata } from "next";
-import Image from "next/image";
-
-import { Separator } from "@/components/ui/separator";
 import { SidebarNav } from "./components/sidebar-nav";
 import { CircleArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { Separator } from "@/components/ui/separator";
 
 export const metadata: Metadata = {
   title: "Settings",
@@ -12,26 +10,9 @@ export const metadata: Metadata = {
 };
 
 const sidebarNavItems = [
-  {
-    title: "Profile",
-    href: "/settings",
-  },
-  {
-    title: "Account",
-    href: "/settings/account",
-  },
-  {
-    title: "Appearance",
-    href: "/settings/appearance",
-  },
-  {
-    title: "Notifications",
-    href: "/settings/notifications",
-  },
-  {
-    title: "Display",
-    href: "/settings/display",
-  },
+  { title: "Profile", href: "/settings" },
+  { title: "Account", href: "/settings/account" },
+  { title: "Appearance", href: "/settings/appearance" },
 ];
 
 interface SettingsLayoutProps {
@@ -41,40 +22,35 @@ interface SettingsLayoutProps {
 export default function SettingsLayout({ children }: SettingsLayoutProps) {
   return (
     <>
-      <div className="md:hidden">
-        <Image
-          src="/examples/forms-light.png"
-          width={1280}
-          height={791}
-          alt="Forms"
-          className="block dark:hidden"
-        />
-        <Image
-          src="/examples/forms-dark.png"
-          width={1280}
-          height={791}
-          alt="Forms"
-          className="hidden dark:block"
-        />
-      </div>
-      <div className="hidden space-y-6 p-10 pb-16 md:block">
-        <div className="space-y-0.5">
-          <div className="flex justify-start items-center gap-2">
-            <Link href="/tasks">
-              <CircleArrowLeft />
-            </Link>
-            <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
+      {/* Desktop Layout */}
+      {/* Sidebar - Fixed on the left */}
+
+      <div className="hidden md:flex">
+        <aside className="fixed left-0 top-0 h-screen w-64 border-r bg-white dark:bg-black p-6 space-y-2">
+          <Link
+            href={"/tasks"}
+            className="flex justify-center items-center gap-2"
+          >
+            <h2 className="text-2xl font-bold tracking-tight">Dev Task</h2>
+          </Link>
+          <Separator />
+          <SidebarNav items={sidebarNavItems} />
+        </aside>
+
+        {/* Main Content Area */}
+        <div className="flex flex-col w-full md:ml-64">
+          {/* Navbar - Fixed at the top */}
+          <div className="fixed top-0 left-64 right-0 bg-white dark:bg-black p-4 border-b z-10">
+            <div className="flex justify-start items-center gap-2">
+              <Link href="/tasks">
+                <CircleArrowLeft className="cursor-pointer" />
+              </Link>
+              <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
+            </div>
           </div>
-          <p className="text-muted-foreground ml-8">
-            Manage your account settings and set e-mail preferences.
-          </p>
-        </div>
-        <Separator className="my-6" />
-        <div className="flex flex-col space-y-8 lg:flex-row lg:space-x-12 lg:space-y-0">
-          <aside className="-mx-4 lg:w-1/5">
-            <SidebarNav items={sidebarNavItems} />
-          </aside>
-          <div className="flex-1 lg:max-w-2xl">{children}</div>
+
+          {/* Page Content */}
+          <div className="p-10 pt-24 max-w-4xl">{children}</div>
         </div>
       </div>
     </>

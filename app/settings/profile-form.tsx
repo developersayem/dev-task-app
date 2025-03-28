@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+// import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -22,6 +22,15 @@ import { ProfilePictureUpload } from "./components/profile-picture-upload";
 import { useState } from "react";
 import IImage from "@/interfaces/IImage";
 import { useAuth } from "@/contexts/AuthProvider";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { CalendarIcon } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
 
 const profileFormSchema = z.object({
   firstName: z
@@ -32,8 +41,10 @@ const profileFormSchema = z.object({
     .string()
     .min(2, { message: "Last name must be at least 2 characters." })
     .max(30, { message: "Last name must not be longer than 30 characters." }),
-  email: z.string().email({ message: "Please enter a valid email." }),
   bio: z.string().max(160).min(4),
+  dob: z.date({
+    required_error: "A date of birth is required.",
+  }),
   urls: z
     .array(
       z.object({
@@ -45,26 +56,28 @@ const profileFormSchema = z.object({
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
-const defaultValues: Partial<ProfileFormValues> = {
-  bio: "I am a developer",
-};
-
 export function ProfileForm() {
   const { user } = useAuth();
   const [selectedImage, setSelectedImage] = useState<IImage | null>(null);
+  const defaultValues: Partial<ProfileFormValues> = {
+    firstName: user?.firstName,
+    lastName: user?.lastName,
+    bio: user?.bio,
+    dob: user?.dob || new Date("2023-01-23"),
+  };
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      firstName: user?.firstName || "",
-      lastName: user?.lastName || "",
-      email: user?.email || "",
+      firstName: defaultValues.firstName,
+      lastName: defaultValues.lastName,
       bio: defaultValues.bio,
+      dob: defaultValues.dob,
     },
     mode: "onChange",
   });
 
   function onSubmit(data: ProfileFormValues) {
-    fetch(`/api/v1/user/${user?._id || "67ded75de4eebd89fa45b5f5"}`, {
+    fetch(`/api/v1/user/${user?._id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -130,16 +143,43 @@ export function ProfileForm() {
         </div>
         <FormField
           control={form.control}
-          name="email"
+          name="dob"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input placeholder="Email" {...field} />
-              </FormControl>
+            <FormItem className="flex flex-col">
+              <FormLabel>Date of birth</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-[240px] pl-3 text-left font-normal",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    disabled={(date) =>
+                      date > new Date() || date < new Date("1900-01-01")
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
               <FormDescription>
-                You can manage verified email addresses in your
-                <Link href="/examples/forms"> email settings</Link>.
+                Your date of birth is used to calculate your age.
               </FormDescription>
               <FormMessage />
             </FormItem>

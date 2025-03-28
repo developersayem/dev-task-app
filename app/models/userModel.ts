@@ -28,6 +28,10 @@ const UserSchema: Schema = new Schema(
       minlength: 3,
       required: false
     },
+    dob: {
+      type: Date,
+      required: false,
+    },
     image: {
       name: { type: String, required: false },
       file: { type: String, required: false }, // Base64 or URL
@@ -37,7 +41,10 @@ const UserSchema: Schema = new Schema(
       required: true,
       minlength: 6,
     },
-    
+    verificationCode: {
+      type: String,
+      default:"",
+    },
     tasks: [
       {
         type: Schema.Types.ObjectId,
@@ -66,11 +73,13 @@ const userValidator = (data: IUser) => {
         return value;
       }),
     bio: Joi.string().min(3).optional().allow(null, ""), // ✅ Optional `boi`
+    dob: Joi.date().optional().allow(null, ""), // ✅ Optional `dob`
     password: Joi.string().min(6).required(),
     image: Joi.object({
       name: Joi.string().optional().allow(null, ""), // ✅ Optional `image.name`
       file: Joi.string().optional().allow(null, ""), // ✅ Optional `image.file`
     }).optional(), // ✅ Entire `image` object is optional
+    verificationCode: Joi.string().optional().allow(""),
   }).messages({
     "string.email": "Make sure your email is correct",
   });
