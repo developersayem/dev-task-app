@@ -2,7 +2,6 @@ import { Metadata } from "next";
 import { SidebarNav } from "./components/sidebar-nav";
 import { CircleArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { Separator } from "@/components/ui/separator";
 
 export const metadata: Metadata = {
   title: "Settings",
@@ -26,15 +25,17 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
       {/* Sidebar - Fixed on the left */}
 
       <div className="hidden md:flex">
-        <aside className="fixed left-0 top-0 h-screen w-64 border-r bg-white dark:bg-black p-6 space-y-2">
+        <aside className="fixed left-0 top-0 h-screen w-64 border-r bg-white dark:bg-black py-6 space-y-2">
           <Link
             href={"/tasks"}
             className="flex justify-center items-center gap-2"
           >
             <h2 className="text-2xl font-bold tracking-tight">Dev Task</h2>
           </Link>
-          <Separator />
-          <SidebarNav items={sidebarNavItems} />
+          <div className="w-full h-[1px] bg-[#E5E5E5]"></div>
+          <div className="px-6">
+            <SidebarNav items={sidebarNavItems} />
+          </div>
         </aside>
 
         {/* Main Content Area */}
@@ -48,7 +49,6 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
               <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
             </div>
           </div>
-
           {/* Page Content */}
           <div className="p-10 pt-24 max-w-4xl">{children}</div>
         </div>

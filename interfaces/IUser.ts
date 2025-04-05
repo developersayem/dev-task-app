@@ -13,5 +13,4 @@ export default interface IUser extends Document {
   password: string;
   createdAt: Date;
   updatedAt: Date;
-
 }

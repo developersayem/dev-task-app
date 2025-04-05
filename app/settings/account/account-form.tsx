@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { InputOTPCom } from "../components/Input-otp";
 import { useState } from "react";
@@ -10,14 +11,24 @@ import { toast } from "sonner";
 export function AccountForm() {
   const { user } = useAuth();
   const [newEmail, setNewEmail] = useState(user?.email || "");
-  const [showOtp, setShowOtp] = useState(false);
+  const [showOtp, setShowOtp] = useState({
+    email: false,
+    password: false,
+  });
   const [otp, setOtp] = useState("");
-  const [oldPassword, setOldPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [changePasswordData, setChangePasswordData] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [showPassword, setShowPassword] = useState({
+    oldPassword: false,
+    newPassword: false,
+    confirmPassword: false,
+  });
 
-  // Send OTP to new email
-  const sendCode = async () => {
+  // Send email verification code
+  const sendEmailVerificationCode = async () => {
     if (!newEmail || newEmail === user?.email) {
       toast.error("Please enter a new email address.");
       return;
@@ -32,7 +43,7 @@ export function AccountForm() {
       const data = await response.json();
       if (response.ok) {
         toast.success("Verification code sent to " + newEmail);
-        setShowOtp(true);
+        setShowOtp((prevShowOtp) => ({ ...prevShowOtp, email: true }));
       } else {
         toast.error(data.message || "Failed to send verification code.");
       }
@@ -41,8 +52,7 @@ export function AccountForm() {
       console.error(error);
     }
   };
-
-  // Verify OTP and update email
+  // Update email address
   const updateEmail = async () => {
     if (!otp) {
       toast.error("Please enter the verification code.");
@@ -64,7 +74,73 @@ export function AccountForm() {
         toast.success("Email updated successfully!");
         const updatedUser = { ...user, email: newEmail };
         localStorage.setItem("user", JSON.stringify(updatedUser));
-        setShowOtp(false);
+        setShowOtp((prevShowOtp) => ({ ...prevShowOtp, email: false }));
+        setOtp("");
+      } else {
+        toast.error(data.message || "Invalid OTP. Please try again.");
+      }
+    } catch (error) {
+      toast.error("Something went wrong. Please try again.");
+      console.error(error);
+    }
+  };
+  // Send change password verification code
+  const sendChangePasswordVerificationCode = async () => {
+    if (!user?.email) {
+      toast.error("Please enter a new email address.");
+      return;
+    }
+    try {
+      const response = await fetch(
+        "/api/v1/auth/send-change-password-verification",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: user?.email }),
+        }
+      );
+
+      const data = await response.json();
+      if (response.ok) {
+        toast.success("Verification code sent to " + user?.email);
+        setShowOtp((prevShowOtp) => ({ ...prevShowOtp, password: true }));
+      } else {
+        toast.error(data.message || "Failed to send verification code.");
+      }
+    } catch (error) {
+      toast.error("Something went wrong. Please try again.");
+      console.error(error);
+    }
+  };
+  // Change password
+  const changePassword = async () => {
+    if (changePasswordData.newPassword !== changePasswordData.confirmPassword) {
+      console.error("Passwords do not match");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/v1/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: user?.email,
+          oldPassword: changePasswordData.oldPassword,
+          newPassword: changePasswordData.newPassword,
+          verificationCode: otp,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        toast.success("Password changed successfully!");
+        setChangePasswordData({
+          oldPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+        setShowOtp((prevShowOtp) => ({ ...prevShowOtp, password: false }));
+        setOtp("");
       } else {
         toast.error(data.message || "Invalid OTP. Please try again.");
       }
@@ -74,64 +150,150 @@ export function AccountForm() {
     }
   };
 
-  const changePassword = async () => {
-    if (newPassword !== confirmPassword) {
-      console.error("Passwords do not match");
-      return;
-    }
-    console.log("Password changed successfully", newPassword);
-  };
-
   return (
     <div>
-      {/* Email change form */}
       <div>
         <h1 className="text-lg font-medium py-2">Change Email</h1>
-        {!showOtp ? (
-          <div>
+        {!showOtp.email ? (
+          <>
             <Input
               placeholder="Enter your new email"
               onChange={(e) => setNewEmail(e.target.value)}
               value={newEmail}
             />
-            <Button className="mt-2" onClick={sendCode}>
+            <p className="text-sm text-muted-foreground p-1">
+              Please enter a valid email address to receive the verification
+              code.
+            </p>
+            <Button className="mt-2" onClick={sendEmailVerificationCode}>
               Send Code
             </Button>
-          </div>
+          </>
         ) : (
-          <div className="py-4 flex justify-start items-center gap-5">
-            <InputOTPCom otp={otp} setOtp={setOtp} />
-            <Button onClick={updateEmail}>Update</Button>
-          </div>
+          <>
+            <span className="py-2">
+              <InputOTPCom otp={otp} setOtp={setOtp} />
+              <p className="text-sm text-muted-foreground p-1">
+                Enter verification code to update email address
+              </p>
+            </span>
+            <Button onClick={updateEmail}>Change Email</Button>
+          </>
         )}
       </div>
-
-      {/* Password change form */}
       <div className="mt-5">
         <h1 className="text-lg font-medium py-2">Change Password</h1>
-        <Input
-          placeholder="Old password"
-          type="password"
-          value={oldPassword}
-          onChange={(e) => setOldPassword(e.target.value)}
-        />
-        <Input
-          className="mt-2"
-          placeholder="New password"
-          type="password"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-        />
-        <Input
-          className="mt-2"
-          placeholder="Confirm password"
-          type="password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-        />
-        <Button className="mt-2" onClick={changePassword}>
-          Change Password
-        </Button>
+        {!showOtp.password ? (
+          <>
+            {/* Old Password Input */}
+            <div className="relative">
+              <Input
+                placeholder="Old password"
+                type={showPassword.oldPassword ? "text" : "password"}
+                value={changePasswordData.oldPassword}
+                onChange={(e) =>
+                  setChangePasswordData((prev) => ({
+                    ...prev,
+                    oldPassword: e.target.value,
+                  }))
+                }
+                className="mt-2"
+              />
+              <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                <button
+                  onClick={() =>
+                    setShowPassword((prev) => ({
+                      ...prev,
+                      oldPassword: !prev.oldPassword,
+                    }))
+                  }
+                >
+                  {showPassword.oldPassword ? <EyeOff /> : <Eye />}
+                </button>
+              </div>
+            </div>
+
+            {/* New Password Input */}
+            <div className="relative">
+              <Input
+                placeholder="New password"
+                type={showPassword.newPassword ? "text" : "password"}
+                value={changePasswordData.newPassword}
+                onChange={(e) =>
+                  setChangePasswordData((prev) => ({
+                    ...prev,
+                    newPassword: e.target.value,
+                  }))
+                }
+                className="mt-2"
+              />
+              <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                <button
+                  onClick={() =>
+                    setShowPassword((prev) => ({
+                      ...prev,
+                      newPassword: !prev.newPassword,
+                    }))
+                  }
+                >
+                  {showPassword.newPassword ? <EyeOff /> : <Eye />}
+                </button>
+              </div>
+            </div>
+
+            {/* Confirm Password Input */}
+            <div className="relative">
+              <Input
+                placeholder="Confirm password"
+                type={showPassword.confirmPassword ? "text" : "password"}
+                value={changePasswordData.confirmPassword}
+                onChange={(e) =>
+                  setChangePasswordData((prev) => ({
+                    ...prev,
+                    confirmPassword: e.target.value,
+                  }))
+                }
+                className="mt-2"
+              />
+              <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                <button
+                  onClick={() =>
+                    setShowPassword((prev) => ({
+                      ...prev,
+                      confirmPassword: !prev.confirmPassword,
+                    }))
+                  }
+                >
+                  {showPassword.confirmPassword ? <EyeOff /> : <Eye />}
+                </button>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground p-1">
+              Please enter your current password and a new password to update
+              your password.
+            </p>
+            {/* Send Verification Code Button */}
+            <Button
+              className="mt-2"
+              onClick={sendChangePasswordVerificationCode}
+            >
+              Send Code
+            </Button>
+          </>
+        ) : (
+          <>
+            {/* OTP Input */}
+            <span className="py-2">
+              <InputOTPCom otp={otp} setOtp={setOtp} />
+              <p className="text-sm text-muted-foreground p-1">
+                Enter OTP to change password
+              </p>
+            </span>
+
+            {/* Change Password Button */}
+            <Button onClick={changePassword}>Change Password</Button>
+          </>
+        )}
       </div>
     </div>
   );

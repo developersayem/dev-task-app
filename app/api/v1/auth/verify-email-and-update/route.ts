@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "../../utils/mongodb";
 import { UserModel } from "@/app/models/userModel";
+import { transporter } from "../../utils/mailer";
 
 export async function POST(req: NextRequest) {
   await dbConnect();
 
   const { email,newEmail, verificationCode } = await req.json();
-  console.log(email,newEmail, verificationCode);
 
   if (!email || !verificationCode) {
     return NextResponse.json(
@@ -43,11 +43,43 @@ export async function POST(req: NextRequest) {
         },
       }
     );
+     // send notification email after user email update to user old email
+     await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Your Email Address Has Been Changed",
+      text: `Dear user,
 
+Your email address has been successfully changed from ${email} to ${newEmail}. You will now receive all future notifications to this new email address.
+
+Thank you for using our service.
+
+Best regards,
+[Your Name]`,
+    });
+
+
+     // send notification email after user email update to user new email
+     await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: newEmail,
+      subject: "Your Email Address Has Been Changed",
+      text: `Dear user,
+
+Your email address has been successfully changed from ${email} to ${newEmail}. You will now receive all future notifications to this new email address.
+
+Thank you for using our service.
+
+Best regards,
+[Your Name]`,
+    });
+// Return success response
     return NextResponse.json(
       { message: "Email verified successfully" },
       { status: 200 }
     );
+   
+
   } catch (error) {
     console.error("Error verifying email:", error);
     return NextResponse.json(
