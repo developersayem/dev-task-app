@@ -7,8 +7,10 @@ import { InputOTPCom } from "../components/Input-otp";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export function AccountForm() {
+  const router = useRouter();
   const { user } = useAuth();
   const [newEmail, setNewEmail] = useState(user?.email || "");
   const [showOtp, setShowOtp] = useState({
@@ -150,6 +152,31 @@ export function AccountForm() {
     }
   };
 
+  // forget password
+  const handleForgetPassword = async () => {
+    try {
+      const response = await fetch(
+        "/api/v1/auth/send-forget-password-verification",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: user?.email }),
+        }
+      );
+
+      const data = await response.json();
+      if (response.ok) {
+        toast.success(data.message);
+        router.push("/forget-password");
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error("Something went wrong. Please try again.");
+      console.error(error);
+    }
+  };
+
   return (
     <div>
       <div>
@@ -165,7 +192,11 @@ export function AccountForm() {
               Please enter a valid email address to receive the verification
               code.
             </p>
-            <Button className="mt-2" onClick={sendEmailVerificationCode}>
+            <Button
+              className="mt-2"
+              onClick={sendEmailVerificationCode}
+              disabled={!newEmail}
+            >
               Send Code
             </Button>
           </>
@@ -177,12 +208,23 @@ export function AccountForm() {
                 Enter verification code to update email address
               </p>
             </span>
-            <Button onClick={updateEmail}>Change Email</Button>
+            <Button onClick={updateEmail} disabled={!otp}>
+              Change Email
+            </Button>
           </>
         )}
       </div>
       <div className="mt-5">
-        <h1 className="text-lg font-medium py-2">Change Password</h1>
+        <div className="flex justify-between">
+          <h1 className="text-lg font-medium py-2">Change Password</h1>
+          <Button
+            variant="link"
+            className="text-red-500"
+            onClick={handleForgetPassword}
+          >
+            Forget Password
+          </Button>
+        </div>
         {!showOtp.password ? (
           <>
             {/* Old Password Input */}
@@ -276,6 +318,11 @@ export function AccountForm() {
             <Button
               className="mt-2"
               onClick={sendChangePasswordVerificationCode}
+              disabled={
+                !changePasswordData.oldPassword ||
+                !changePasswordData.newPassword ||
+                !changePasswordData.confirmPassword
+              }
             >
               Send Code
             </Button>
@@ -291,7 +338,9 @@ export function AccountForm() {
             </span>
 
             {/* Change Password Button */}
-            <Button onClick={changePassword}>Change Password</Button>
+            <Button onClick={changePassword} disabled={!otp}>
+              Change Password
+            </Button>
           </>
         )}
       </div>
