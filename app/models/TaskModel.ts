@@ -1,18 +1,18 @@
 import ITask from "@/interfaces/ITask";
 import mongoose, { Schema, Model } from "mongoose";
 
-// Define Task Schema
 const taskSchema: Schema<ITask> = new Schema(
   {
     user: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: true, // Ensures every task is linked to a user
+      required: true,
+      index: true,
     },
     title: {
       type: String,
       required: true,
-      trim: true, // Removes leading and trailing spaces
+      trim: true,
       minlength: 3,
       maxlength: 100,
     },
@@ -28,7 +28,7 @@ const taskSchema: Schema<ITask> = new Schema(
     },
     status: {
       type: String,
-      enum: ["todo", "in progress", "done", "backlog"], // Restrict values
+      enum: ["todo", "in progress", "done", "backlog" ,"cancelled"],
       required: true,
       default: "todo",
     },
@@ -40,11 +40,11 @@ const taskSchema: Schema<ITask> = new Schema(
     },
   },
   {
-    timestamps: true, // Adds createdAt and updatedAt
+    timestamps: true,
+    versionKey: false,
   }
 );
 
-// Ensure the model isn't redefined (prevents hot-reload issues)
 const taskModel: Model<ITask> =
   mongoose.models.Task || mongoose.model<ITask>("Task", taskSchema);
 

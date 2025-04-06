@@ -35,6 +35,7 @@ import Link from "next/link";
 import ITask from "@/interfaces/ITask";
 import { toast } from "sonner";
 import { fetcher } from "@/utils/fetcher";
+import ProjectSwitcher from "@/components/project-switcher";
 
 // Handle deleting task function
 export const handleTaskDelete = async (taskId: string, userId: string) => {
@@ -159,7 +160,10 @@ export function TaskTableCom<TValue>({
         ) : (
           <div className="space-y-4">
             <div className="w-full h-full flex justify-between items-center">
-              <DataTableToolbar table={table} />
+              <div className="w-full flex items-center space-x-2">
+                <ProjectSwitcher className="w-fit" />
+                <DataTableToolbar table={table} />
+              </div>
               <AddTaskCom />
             </div>
             <div className="rounded-md border">
