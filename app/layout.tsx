@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Dev Task",
-  description: "Dev task for developer",
+  title: "Tasksy",
+  description: "Project, Tasks and issue tracker for developer",
 };
 
 export default function RootLayout({

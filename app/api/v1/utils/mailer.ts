@@ -9,5 +9,5 @@ export const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  from: `"Dev Task" <${process.env.EMAIL_USER}>`,
+  from: `"Tasksy" <${process.env.EMAIL_USER}>`,
 });

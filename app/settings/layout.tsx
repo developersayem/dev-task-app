@@ -30,7 +30,7 @@ export default function SettingsLayout({ children }: SettingsLayoutProps) {
             href={"/tasks"}
             className="flex justify-center items-center gap-2"
           >
-            <h2 className="text-2xl font-bold tracking-tight">Dev Task</h2>
+            <h2 className="text-2xl font-bold tracking-tight">Tasksy</h2>
           </Link>
           <div className="w-full h-[1px] bg-[#E5E5E5]"></div>
           <div className="px-6">
