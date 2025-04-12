@@ -1,6 +1,10 @@
 Here’s a complete `README.md` file for your **Dev Task App**. You can copy and paste this into a file named `README.md` in the root of your GitHub repository.
 
+<<<<<<< HEAD
 ````markdown
+=======
+```markdown
+>>>>>>> c65e5ff5692974943e869d1ddef750a6ddba448c
 # Dev Task App
 
 ## Description
@@ -25,6 +29,7 @@ The **Dev Task App** is a task management application designed to help developer
 ## Getting Started
 
 To get started with the Dev Task App locally, follow these steps:
+<<<<<<< HEAD
 
 1. Clone the repository:
    ```bash
@@ -54,6 +59,34 @@ Contributions are welcome! Feel free to fork the repository and submit a pull re
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
 
+=======
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/developersayem/dev-task-app.git
+   ```
+2. Navigate to the project directory:
+   ```bash
+   cd dev-task-app
+   ```
+3. Install the necessary dependencies:
+   ```bash
+   npm install
+   ```
+4. Set up your environment variables (refer to the `.env.example` file for configuration).
+5. Start the application:
+   ```bash
+   npm run dev
+   ```
+
+## Contributing
+
+Contributions are welcome! Feel free to fork the repository and submit a pull request for any enhancements or bug fixes.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+>>>>>>> c65e5ff5692974943e869d1ddef750a6ddba448c
 ```
 
 
@@ -69,4 +102,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
    - After saving your changes, commit the `README.md` file and push it to your GitHub repository.
 
 This `README.md` provides a clear and comprehensive overview of your project, making it easier for users and contributors to understand and engage with your work. Let me know if you need any further modifications or assistance!
+<<<<<<< HEAD
 ```
+=======
+>>>>>>> c65e5ff5692974943e869d1ddef750a6ddba448c
