@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "../../../utils/mongodb";
-import taskModel from "../../../../../models/TaskModel";
+import projectModel from "@/app/models/ProjectModel";
 
 export async function DELETE(
   req: NextRequest,
@@ -11,18 +11,18 @@ export async function DELETE(
 
     const id = (await params).id;
 
-    const result = await taskModel.deleteOne({ _id: id });
+    const result = await projectModel.deleteOne({ _id: id });
 
     if (result.deletedCount === 0) {
-      return NextResponse.json({ message: "Task not found" }, { status: 404 });
+      return NextResponse.json({ message: "Project not found" }, { status: 404 });
     }
 
     return NextResponse.json(
-      { message: "Task deleted successfully", result },
+      { message: "Project deleted successfully", result },
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error deleting task:", error);
+    console.error("Error deleting project:", error);
     return NextResponse.json(
       { message: "Database error", error },
       { status: 500 }
@@ -41,7 +41,7 @@ export async function PATCH(
 
     const { property, value } = await req.json();
 
-    const result = await taskModel.findOneAndUpdate(
+    const result = await projectModel.findOneAndUpdate(
       { _id: id },
       { [property]: value },
       {
@@ -50,11 +50,11 @@ export async function PATCH(
     );
 
     return NextResponse.json(
-      { message: "Task updated successfully", result },
+      { message: "Project updated successfully", result },
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error updating task:", error);
+    console.error("Error updating project:", error);
     return NextResponse.json(
       { message: "Database error", error },
       { status: 500 }

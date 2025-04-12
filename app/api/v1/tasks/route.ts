@@ -9,7 +9,9 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
 
-    const { title, description, status, priority, user, label } = body;
+    const { title, description, status, priority, user, label, project } = body;
+    const reqData={project }
+    console.log("reqData",reqData)
 
     // Validate label
     if (!["bug", "feature", "documentation"].includes(label)) {
@@ -23,6 +25,7 @@ export async function POST(req: NextRequest) {
       status,
       priority,
       label,
+      project,
     });
     return NextResponse.json(newTask, { status: 201 });
   } catch (error) {

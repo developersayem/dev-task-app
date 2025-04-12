@@ -16,20 +16,29 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import PrioritySelectorCom from "../../../../components/priority-selector-com";
 import StatusSelectorCom from "../../../../components/status-selector-com";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthProvider";
 import { toast } from "sonner";
 import LabelSelectorCom from "../../../../components/label-selector-com";
 import { mutate } from "swr";
+import ProjectSelectorCom from "@/components/project-selector-com";
+import IProject from "@/interfaces/IProject";
 
 const AddTaskCom = () => {
   const { user } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [selectedProject, setSelectedProject] = useState<IProject | null>(null);
+  const [storedProject, setStoredProject] = useState<IProject | null>(null);
   const [status, setStatus] = useState("todo");
   const [priority, setPriority] = useState("low");
   const [label, setLabel] = useState("low");
   const [isOpen, setIsOpen] = useState(false); // Manage dialog state
+
+  useEffect(() => {
+    const stored = localStorage.getItem("project");
+    setStoredProject(stored ? JSON.parse(stored) : null);
+  }, []);
 
   const createTask = async () => {
     const taskData = {
@@ -39,6 +48,7 @@ const AddTaskCom = () => {
       status,
       priority,
       label,
+      project: selectedProject || storedProject,
     };
 
     try {
@@ -57,6 +67,7 @@ const AddTaskCom = () => {
         setPriority("low");
         setLabel("bug");
         setIsOpen(false);
+        setSelectedProject(null);
         mutate(`/api/v1/tasks/by-user/${user?._id}`); // Revalidate data
       } else {
         const errorData = await response.json();
@@ -71,7 +82,7 @@ const AddTaskCom = () => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className=" " onClick={() => setIsOpen(true)}>
+        <Button className="" onClick={() => setIsOpen(true)}>
           <DiamondPlus /> Add Task
         </Button>
       </DialogTrigger>
@@ -82,7 +93,6 @@ const AddTaskCom = () => {
             Enter required information to create a new task.
           </DialogDescription>
         </DialogHeader>
-
         <CardContent className="grid gap-4">
           <div className="grid gap-2">
             <Label htmlFor="title">Title</Label>
@@ -95,6 +105,10 @@ const AddTaskCom = () => {
             />
           </div>
           <div className="grid grid-cols-2 gap-2">
+            <div className="grid gap-2">
+              <Label htmlFor="status">Project</Label>
+              <ProjectSelectorCom setSelectedProject={setSelectedProject} />
+            </div>
             <div className="grid gap-2">
               <Label htmlFor="status">Status</Label>
               <StatusSelectorCom setStatus={setStatus} />

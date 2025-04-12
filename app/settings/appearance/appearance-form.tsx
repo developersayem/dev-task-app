@@ -50,7 +50,6 @@ export function AppearanceForm() {
 
   function onSubmit(data: AppearanceFormValues) {
     setTheme(data.theme);
-    console.log("Submitted data:", data);
     toast(`Theme updated to: ${data.theme}`);
   }
 

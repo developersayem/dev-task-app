@@ -97,14 +97,53 @@ interface DataTableProps<TData, TValue = unknown> {
 export function TaskTableCom<TValue>({
   columns,
 }: DataTableProps<ITask, TValue>) {
-  const auth = useAuth();
-  const user = auth?.user ?? null;
+  const { user } = useAuth();
+  const [projectId, setProjectId] = React.useState<string | null>(null);
+
+  // Initialize projectId from localStorage on component mount
+  React.useEffect(() => {
+    const storedProject = localStorage.getItem("project");
+    if (storedProject) {
+      const parsedProject = JSON.parse(storedProject);
+      setProjectId(parsedProject?._id as string);
+    }
+  }, []);
+
+  // Listen to local storage changes
+  React.useEffect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === "project") {
+        const newProjectId = event.newValue
+          ? JSON.parse(event.newValue)?._id
+          : null;
+        setProjectId(newProjectId);
+        // Use the new projectId directly in the mutate call
+        if (user?._id && newProjectId) {
+          mutate(`/api/v1/tasks/by-user/${user?._id}/${newProjectId}`);
+        }
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, [user]); // Only depend on user, not projectId
+
+  // Refresh data when projectId changes
+  React.useEffect(() => {
+    if (user?._id && projectId) {
+      mutate(`/api/v1/tasks/by-user/${user?._id}/${projectId}`);
+    }
+  }, [user?._id, projectId]);
 
   const {
     data: tasks,
     error,
     isLoading,
-  } = useSWR(user?._id ? `/api/v1/tasks/by-user/${user?._id}` : null, fetcher);
+  } = useSWR(
+    user?._id && projectId
+      ? `/api/v1/tasks/by-user/${user?._id}/${projectId}`
+      : null,
+    fetcher
+  );
 
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
@@ -167,7 +206,7 @@ export function TaskTableCom<TValue>({
               <AddTaskCom />
             </div>
             <div className="rounded-md border">
-              <Table className="capitalize ">
+              <Table className="capitalize">
                 <TableHeader>
                   {table.getHeaderGroups().map((headerGroup) => (
                     <TableRow key={headerGroup.id}>

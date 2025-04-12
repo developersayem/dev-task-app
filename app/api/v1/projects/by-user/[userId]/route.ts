@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "../../../utils/mongodb";
-import taskModel from "../../../../../models/TaskModel";
+import projectModel from "@/app/models/ProjectModel";
 
 // Handle GET request to fetch tasks by user ID
 export async function GET(
@@ -11,8 +11,8 @@ export async function GET(
     await dbConnect(); // Ensure database connection
 
     const userId = (await params).userId;
-    const tasks = await taskModel.find({ user: userId }); // Fetch tasks by userId
-    return NextResponse.json(tasks, { status: 200 });
+    const projects = await projectModel.find({ user: userId }); // Fetch tasks by userId
+    return NextResponse.json(projects, { status: 200 });
   } catch (error) {
     return NextResponse.json(
       { message: "Database error", error },

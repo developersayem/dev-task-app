@@ -10,6 +10,7 @@ import {
   CircleOff,
   PlusCircle,
   Timer,
+  Loader,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -42,9 +43,10 @@ import {
 import { Textarea } from "./ui/textarea";
 import { Badge } from "./ui/badge";
 import StatusSelectorCom from "./status-selector-com";
+import useSWR, { mutate } from "swr";
 import { useAuth } from "@/contexts/AuthProvider";
-import { mutate } from "swr";
 import { toast } from "sonner";
+import { fetcher } from "@/utils/fetcher";
 
 interface IProject {
   _id: string;
@@ -53,23 +55,6 @@ interface IProject {
   status: "todo" | "in progress" | "done" | "backlog" | "cancelled";
   description: string;
 }
-
-const projects: IProject[] = [
-  {
-    _id: "1",
-    user: "1",
-    name: "Dev task project",
-    status: "todo",
-    description: "Description 1",
-  },
-  {
-    _id: "2",
-    user: "1",
-    name: "Portfolio project",
-    status: "in progress",
-    description: "Description 2",
-  },
-];
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
   typeof PopoverTrigger
@@ -80,7 +65,7 @@ interface ProjectSwitcherProps extends PopoverTriggerProps {
 }
 
 // status icons
-const statusIcon = (selectedProject: IProject, size: number) => {
+const statusIcon = (selectedProject: IProject | undefined, size: number) => {
   switch (selectedProject?.status) {
     case "todo":
       return <Circle size={size} />;
@@ -92,19 +77,43 @@ const statusIcon = (selectedProject: IProject, size: number) => {
       return <Timer size={size} />;
     case "cancelled":
       return <CircleOff size={size} />;
+    default:
+      return null;
   }
 };
+
 export default function ProjectSwitcher({ className }: ProjectSwitcherProps) {
   const { user } = useAuth();
   const [open, setOpen] = React.useState(false);
   const [showNewProjectDialog, setShowNewProjectDialog] = React.useState(false);
-  const [selectedProject, setSelectedProject] = React.useState<IProject>(
-    projects[0]
-  );
+  const [selectedProject, setSelectedProject] = React.useState<IProject>();
   const [name, setName] = React.useState("");
   const [status, setStatus] = React.useState("todo");
   const [description, setDescription] = React.useState("");
-  const createProject = async () => {
+
+  // Load selected project from localStorage
+  React.useEffect(() => {
+    const stored = localStorage.getItem("project");
+    if (stored) {
+      try {
+        setSelectedProject(JSON.parse(stored));
+      } catch (e) {
+        console.error("Failed to parse project from localStorage", e);
+      }
+    }
+  }, []);
+
+  // ✅ Corrected endpoint
+  const {
+    data: projects,
+    error,
+    isLoading,
+  } = useSWR(
+    user?._id ? `/api/v1/projects/by-user/${user?._id}` : null,
+    fetcher
+  );
+
+  async function createProject() {
     const projectData = {
       user,
       name,
@@ -120,12 +129,15 @@ export default function ProjectSwitcher({ className }: ProjectSwitcherProps) {
       });
 
       if (response.ok) {
-        const newTask = await response.json(); // ✅ Get the new task
-        toast.success("Task created successfully!", newTask.title);
+        const newProject = await response.json();
+        toast.success("Project created successfully!", {
+          description: newProject.name,
+        });
         setName("");
         setDescription("");
         setStatus("todo");
-        mutate(`/api/v1/projects/by-user/${user?._id}`); // Revalidate data
+        setShowNewProjectDialog(false);
+        mutate(`/api/v1/projects/by-user/${user?._id}`);
       } else {
         const errorData = await response.json();
         toast.error(errorData.message || "Something went wrong");
@@ -134,7 +146,16 @@ export default function ProjectSwitcher({ className }: ProjectSwitcherProps) {
       console.error("Error creating project:", error);
       toast.error("Server error, please try again later.");
     }
-  };
+  }
+
+  if (error) {
+    return (
+      <div className="w-full h-[80vh] flex justify-center items-center">
+        Error loading projects.
+      </div>
+    );
+  }
+
   return (
     <Dialog open={showNewProjectDialog} onOpenChange={setShowNewProjectDialog}>
       <Popover open={open} onOpenChange={setOpen}>
@@ -146,13 +167,15 @@ export default function ProjectSwitcher({ className }: ProjectSwitcherProps) {
             aria-label="Select a project"
             className={cn("w-fit justify-between", className)}
           >
-            {selectedProject?.name}
-            <Badge variant="outline" className="space-x-2">
-              <span className="text-muted-foreground">
-                {statusIcon(selectedProject, 10)}
-              </span>
-              <span>{selectedProject?.status}</span>
-            </Badge>
+            {selectedProject?.name || "Select a project"}
+            {selectedProject && (
+              <Badge variant="outline" className="space-x-2 ml-2">
+                <span className="text-muted-foreground">
+                  {statusIcon(selectedProject, 10)}
+                </span>
+                <span>{selectedProject.status}</span>
+              </Badge>
+            )}
             <ChevronsUpDown className="ml-auto h-4 w-4 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -162,32 +185,43 @@ export default function ProjectSwitcher({ className }: ProjectSwitcherProps) {
             <CommandList>
               <CommandEmpty>No project found.</CommandEmpty>
               <CommandGroup heading="Projects">
-                {projects.map((project) => (
-                  <CommandItem
-                    key={project._id}
-                    onSelect={() => {
-                      setSelectedProject(project);
-                      setOpen(false);
-                    }}
-                    className="text-sm"
-                  >
-                    {project.name}
-                    <Badge variant="outline" className="space-x-2">
-                      <span className="text-muted-foreground">
-                        {statusIcon(project, 10)}
-                      </span>
-                      <span>{project?.status}</span>
-                    </Badge>
-                    <Check
-                      className={cn(
-                        "ml-auto h-4 w-4",
-                        selectedProject._id === project._id
-                          ? "opacity-100"
-                          : "opacity-0"
-                      )}
-                    />
-                  </CommandItem>
-                ))}
+                {isLoading ? (
+                  <div className="flex justify-center items-center h-40">
+                    <Loader className="animate-spin w-6 h-6 text-muted-foreground" />
+                    <span className="ml-2">Loading...</span>
+                  </div>
+                ) : (
+                  projects?.map((project: IProject) => (
+                    <CommandItem
+                      key={project._id}
+                      onSelect={() => {
+                        setSelectedProject(project);
+                        localStorage.setItem(
+                          "project",
+                          JSON.stringify(project)
+                        );
+                        setOpen(false);
+                      }}
+                      className="text-sm"
+                    >
+                      {project.name}
+                      <Badge variant="outline" className="space-x-2 ml-2">
+                        <span className="text-muted-foreground">
+                          {statusIcon(project, 10)}
+                        </span>
+                        <span>{project.status}</span>
+                      </Badge>
+                      <Check
+                        className={cn(
+                          "ml-auto h-4 w-4",
+                          selectedProject?.name === project.name
+                            ? "opacity-100"
+                            : "opacity-0"
+                        )}
+                      />
+                    </CommandItem>
+                  ))
+                )}
               </CommandGroup>
               <CommandSeparator />
               <CommandGroup>
@@ -207,6 +241,8 @@ export default function ProjectSwitcher({ className }: ProjectSwitcherProps) {
           </Command>
         </PopoverContent>
       </Popover>
+
+      {/* Create Project Dialog */}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create Project</DialogTitle>
@@ -246,9 +282,7 @@ export default function ProjectSwitcher({ className }: ProjectSwitcherProps) {
           >
             Cancel
           </Button>
-          <Button type="submit" onClick={createProject}>
-            Create Project
-          </Button>
+          <Button onClick={createProject}>Create Project</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

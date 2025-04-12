@@ -9,6 +9,12 @@ const taskSchema: Schema<ITask> = new Schema(
       required: true,
       index: true,
     },
+    project: {
+      type: Schema.Types.ObjectId,
+      ref: "Project",
+      required: true,
+      index: true,
+    },
     title: {
       type: String,
       required: true,

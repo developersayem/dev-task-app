@@ -2,26 +2,25 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "../../utils/mongodb";
 import { UserModel } from "@/app/models/userModel";
 
-interface IUser{
-    firstName: string;
-    lastName: string;
-    email: string;
-    bio: string;
-    image: string;
+interface IUser {
+  firstName: string;
+  lastName: string;
+  email: string;
+  bio: string;
+  image: string;
 }
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+
+export async function PATCH(req: NextRequest) {
   try {
     await dbConnect();
 
-    const { id } = params;
+    const id = req.nextUrl.pathname.split("/").pop(); // or use regex for more precision
     const { firstName, lastName, email, bio, image } = await req.json();
-    const updateData:IUser = { firstName, lastName, email, bio, image };
-    
+
+    const updateData: IUser = { firstName, lastName, email, bio, image };
+
     if (image && image.file) {
-      updateData.image = image.file; // Assuming you're storing the Base64 string directly
+      updateData.image = image.file;
     }
 
     const updatedUser = await UserModel.findOneAndUpdate(
@@ -35,7 +34,14 @@ export async function PATCH(
     }
 
     return NextResponse.json(
-      {_id:updatedUser._id,firstName:updatedUser.firstName,lastName:updatedUser.lastName,email:updatedUser.email,bio:updatedUser.bio,image:updatedUser.image},
+      {
+        _id: updatedUser._id,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        email: updatedUser.email,
+        bio: updatedUser.bio,
+        image: updatedUser.image,
+      },
       { status: 200 }
     );
   } catch (error) {
