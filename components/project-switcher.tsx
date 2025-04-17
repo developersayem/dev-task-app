@@ -62,6 +62,7 @@ type PopoverTriggerProps = React.ComponentPropsWithoutRef<
 
 interface ProjectSwitcherProps extends PopoverTriggerProps {
   className?: string;
+  onProjectChange?: (projectId: string) => void;
 }
 
 // status icons
@@ -82,36 +83,53 @@ const statusIcon = (selectedProject: IProject | undefined, size: number) => {
   }
 };
 
-export default function ProjectSwitcher({ className }: ProjectSwitcherProps) {
+export default function ProjectSwitcher({
+  className,
+  onProjectChange,
+}: ProjectSwitcherProps) {
   const { user } = useAuth();
   const [open, setOpen] = React.useState(false);
   const [showNewProjectDialog, setShowNewProjectDialog] = React.useState(false);
-  const [selectedProject, setSelectedProject] = React.useState<IProject>();
+  const [selectedProjectId, setSelectedProjectId] = React.useState("");
+  const [selectedProject, setSelectedProject] =
+    React.useState<IProject | null>();
   const [name, setName] = React.useState("");
   const [status, setStatus] = React.useState("todo");
   const [description, setDescription] = React.useState("");
 
   // Load selected project from localStorage
   React.useEffect(() => {
-    const stored = localStorage.getItem("project");
+    const stored = localStorage.getItem("projectId");
     if (stored) {
       try {
-        setSelectedProject(JSON.parse(stored));
+        const projectId = JSON.parse(stored);
+        setSelectedProjectId(projectId);
+        if (onProjectChange) onProjectChange(projectId);
       } catch (e) {
         console.error("Failed to parse project from localStorage", e);
       }
     }
-  }, []);
+  }, [onProjectChange]);
 
-  // ✅ Corrected endpoint
   const {
     data: projects,
     error,
     isLoading,
   } = useSWR(
-    user?._id ? `/api/v1/projects/by-user/${user?._id}` : null,
+    user?._id ? `/api/v1/projects/by-user/${user._id}` : null,
     fetcher
   );
+
+  React.useEffect(() => {
+    if (selectedProjectId && projects?.length) {
+      const project = projects.find(
+        (p: IProject) => p._id === selectedProjectId
+      );
+      setSelectedProject(project || null);
+    } else {
+      setSelectedProject(null);
+    }
+  }, [projects, selectedProjectId]);
 
   async function createProject() {
     const projectData = {
@@ -195,12 +213,13 @@ export default function ProjectSwitcher({ className }: ProjectSwitcherProps) {
                     <CommandItem
                       key={project._id}
                       onSelect={() => {
-                        setSelectedProject(project);
-                        localStorage.setItem(
-                          "project",
-                          JSON.stringify(project)
-                        );
+                        setSelectedProjectId(project._id);
                         setOpen(false);
+                        localStorage.setItem(
+                          "projectId",
+                          JSON.stringify(project._id)
+                        );
+                        if (onProjectChange) onProjectChange(project._id);
                       }}
                       className="text-sm"
                     >
@@ -214,7 +233,7 @@ export default function ProjectSwitcher({ className }: ProjectSwitcherProps) {
                       <Check
                         className={cn(
                           "ml-auto h-4 w-4",
-                          selectedProject?.name === project.name
+                          selectedProject?._id === project._id
                             ? "opacity-100"
                             : "opacity-0"
                         )}

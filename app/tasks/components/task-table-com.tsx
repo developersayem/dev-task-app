@@ -37,7 +37,7 @@ import { toast } from "sonner";
 import { fetcher } from "@/utils/fetcher";
 import ProjectSwitcher from "@/components/project-switcher";
 
-// Handle deleting task function
+// Task delete handler
 export const handleTaskDelete = async (taskId: string, userId: string) => {
   const confirmDelete = window.confirm(
     "Are you sure you want to delete this task?"
@@ -51,7 +51,7 @@ export const handleTaskDelete = async (taskId: string, userId: string) => {
 
     if (res.ok) {
       toast.success("Task deleted successfully!");
-      mutate(`/api/v1/tasks/by-user/${userId}`); // Revalidate data
+      mutate(`/api/v1/tasks/by-user/${userId}`); // Refresh task list
     } else {
       toast.error("Failed to delete task.");
     }
@@ -61,7 +61,7 @@ export const handleTaskDelete = async (taskId: string, userId: string) => {
   }
 };
 
-// Handle updating Property like task status label etc
+// Task property update handler (e.g. status, label)
 export async function updateTaskProperty(
   taskId: string,
   userId: string,
@@ -83,7 +83,7 @@ export async function updateTaskProperty(
 
     const result = await response.json();
     toast.success(result.message);
-    mutate(`/api/v1/tasks/by-user/${userId}`); // Revalidate data
+    mutate(`/api/v1/tasks/by-user/${userId}`); // Refresh task list
   } catch (error) {
     toast.error("Error updating task");
     console.error("Error updating task:", error);
@@ -98,53 +98,36 @@ export function TaskTableCom<TValue>({
   columns,
 }: DataTableProps<ITask, TValue>) {
   const { user } = useAuth();
+
+  // Project ID from selected project
   const [projectId, setProjectId] = React.useState<string | null>(null);
 
-  // Initialize projectId from localStorage on component mount
+  // On mount, try to get projectId from localStorage
   React.useEffect(() => {
-    const storedProject = localStorage.getItem("project");
-    if (storedProject) {
-      const parsedProject = JSON.parse(storedProject);
-      setProjectId(parsedProject?._id as string);
+    const stored = localStorage.getItem("projectId");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        setProjectId(parsed?._id ?? parsed);
+      } catch (err) {
+        console.error("Invalid projectId in localStorage", err);
+      }
     }
   }, []);
 
-  // Listen to local storage changes
-  React.useEffect(() => {
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === "project") {
-        const newProjectId = event.newValue
-          ? JSON.parse(event.newValue)?._id
-          : null;
-        setProjectId(newProjectId);
-        // Use the new projectId directly in the mutate call
-        if (user?._id && newProjectId) {
-          mutate(`/api/v1/tasks/by-user/${user?._id}/${newProjectId}`);
-        }
-      }
-    };
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
-  }, [user]); // Only depend on user, not projectId
-
-  // Refresh data when projectId changes
-  React.useEffect(() => {
-    if (user?._id && projectId) {
-      mutate(`/api/v1/tasks/by-user/${user?._id}/${projectId}`);
-    }
-  }, [user?._id, projectId]);
-
+  // SWR data fetching based on userId and projectId
   const {
     data: tasks,
     error,
     isLoading,
   } = useSWR(
     user?._id && projectId
-      ? `/api/v1/tasks/by-user/${user?._id}/${projectId}`
+      ? `/api/v1/tasks/by-user/${user._id}/${projectId}`
       : null,
     fetcher
   );
 
+  // Table UI state
   const [rowSelection, setRowSelection] = React.useState({});
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -153,6 +136,7 @@ export function TaskTableCom<TValue>({
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
 
+  // Configure TanStack Table
   const table = useReactTable({
     data: tasks || [],
     columns,
@@ -165,7 +149,7 @@ export function TaskTableCom<TValue>({
     enableRowSelection: true,
     initialState: {
       pagination: {
-        pageSize: 20, // Show 20 tasks by default
+        pageSize: 20, // Default 20 tasks per page
       },
     },
     onRowSelectionChange: setRowSelection,
@@ -200,62 +184,81 @@ export function TaskTableCom<TValue>({
           <div className="space-y-4">
             <div className="w-full h-full flex justify-between items-center">
               <div className="w-full flex items-center space-x-2">
-                <ProjectSwitcher className="w-fit" />
+                {/* Project Switcher with callback */}
+                <ProjectSwitcher
+                  className="w-fit"
+                  onProjectChange={(newProjectId) => {
+                    setProjectId(newProjectId);
+                    if (user?._id && newProjectId) {
+                      mutate(
+                        `/api/v1/tasks/by-user/${user._id}/${newProjectId}`
+                      );
+                    }
+                  }}
+                />
                 <DataTableToolbar table={table} />
               </div>
-              <AddTaskCom />
+
+              {projectId && <AddTaskCom />}
             </div>
-            <div className="rounded-md border">
-              <Table className="capitalize">
-                <TableHeader>
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id}>
-                      {headerGroup.headers.map((header) => {
-                        return (
-                          <TableHead key={header.id} colSpan={header.colSpan}>
-                            {header.isPlaceholder
-                              ? null
-                              : flexRender(
-                                  header.column.columnDef.header,
-                                  header.getContext()
+
+            {projectId ? (
+              <>
+                <div className="rounded-md border">
+                  <Table className="capitalize">
+                    <TableHeader>
+                      {table.getHeaderGroups().map((headerGroup) => (
+                        <TableRow key={headerGroup.id}>
+                          {headerGroup.headers.map((header) => (
+                            <TableHead key={header.id} colSpan={header.colSpan}>
+                              {header.isPlaceholder
+                                ? null
+                                : flexRender(
+                                    header.column.columnDef.header,
+                                    header.getContext()
+                                  )}
+                            </TableHead>
+                          ))}
+                        </TableRow>
+                      ))}
+                    </TableHeader>
+                    <TableBody>
+                      {table.getRowModel().rows?.length ? (
+                        table.getRowModel().rows.map((row) => (
+                          <TableRow
+                            key={row.id}
+                            data-state={row.getIsSelected() && "selected"}
+                          >
+                            {row.getVisibleCells().map((cell) => (
+                              <TableCell key={cell.id}>
+                                {flexRender(
+                                  cell.column.columnDef.cell,
+                                  cell.getContext()
                                 )}
-                          </TableHead>
-                        );
-                      })}
-                    </TableRow>
-                  ))}
-                </TableHeader>
-                <TableBody>
-                  {table.getRowModel().rows?.length ? (
-                    table.getRowModel().rows.map((row) => (
-                      <TableRow
-                        key={row.id}
-                        data-state={row.getIsSelected() && "selected"}
-                      >
-                        {row.getVisibleCells().map((cell) => (
-                          <TableCell key={cell.id}>
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
+                              </TableCell>
+                            ))}
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell
+                            colSpan={columns.length}
+                            className="h-24 text-center"
+                          >
+                            No results.
                           </TableCell>
-                        ))}
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell
-                        colSpan={columns.length}
-                        className="h-24 text-center"
-                      >
-                        No results.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-            <DataTablePagination table={table} />
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+                <DataTablePagination table={table} />
+              </>
+            ) : (
+              <div className="w-full h-[80vh] flex justify-center items-center">
+                Please select a project to see your tasks.
+              </div>
+            )}
           </div>
         )
       ) : (

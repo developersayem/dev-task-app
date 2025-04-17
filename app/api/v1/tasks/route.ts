@@ -10,8 +10,6 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     const { title, description, status, priority, user, label, project } = body;
-    const reqData={project }
-    console.log("reqData",reqData)
 
     // Validate label
     if (!["bug", "feature", "documentation"].includes(label)) {
