@@ -23,21 +23,22 @@ import LabelSelectorCom from "../../../../components/label-selector-com";
 import { mutate } from "swr";
 import ProjectSelectorCom from "@/components/project-selector-com";
 import IProject from "@/interfaces/IProject";
+import ITask from "@/interfaces/ITask";
 
 const AddTaskCom = () => {
   const { user } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [selectedProject, setSelectedProject] = useState<IProject | null>(null);
-  const [storedProject, setStoredProject] = useState<IProject | null>(null);
+  const [storedProjectId, setStoredProjectId] = useState<IProject | null>(null);
   const [status, setStatus] = useState("todo");
   const [priority, setPriority] = useState("low");
   const [label, setLabel] = useState("low");
   const [isOpen, setIsOpen] = useState(false); // Manage dialog state
 
   useEffect(() => {
-    const stored = localStorage.getItem("project");
-    setStoredProject(stored ? JSON.parse(stored) : null);
+    const stored = localStorage.getItem("projectId");
+    setStoredProjectId(stored ? JSON.parse(stored) : null);
   }, []);
 
   const createTask = async () => {
@@ -48,7 +49,7 @@ const AddTaskCom = () => {
       status,
       priority,
       label,
-      project: selectedProject || storedProject,
+      project: selectedProject || storedProjectId,
     };
 
     try {
@@ -59,8 +60,20 @@ const AddTaskCom = () => {
       });
 
       if (response.ok) {
-        const newTask = await response.json(); // ✅ Get the new task
+        const newTask = await response.json();
+
         toast.success("Task created successfully!", newTask.title);
+
+        // ✅ Optimistically update task list in SWR
+        mutate(
+          `/api/v1/tasks/by-user/${user?._id}/${storedProjectId}`,
+          (existingTasks: ITask[] = []) => {
+            return [newTask, ...existingTasks];
+          },
+          false
+        );
+
+        // ✅ Clear form
         setTitle("");
         setDescription("");
         setStatus("todo");
@@ -68,7 +81,6 @@ const AddTaskCom = () => {
         setLabel("bug");
         setIsOpen(false);
         setSelectedProject(null);
-        mutate(`/api/v1/tasks/by-user/${user?._id}`); // Revalidate data
       } else {
         const errorData = await response.json();
         toast.error(errorData.message || "Something went wrong");
@@ -82,7 +94,7 @@ const AddTaskCom = () => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="" onClick={() => setIsOpen(true)}>
+        <Button onClick={() => setIsOpen(true)}>
           <DiamondPlus /> Add Task
         </Button>
       </DialogTrigger>
